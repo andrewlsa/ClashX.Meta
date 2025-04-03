@@ -7,6 +7,7 @@
 
 import Cocoa
 import Alamofire
+import CryptoKit
 
 class AlphaMetaDownloader: NSObject {
 
@@ -16,6 +17,8 @@ class AlphaMetaDownloader: NSObject {
 		case downloadFailed
 		case unknownError
 		case testFailed
+        case checksumFailed
+        case downloadChecksumFailed
 
 		func des() -> String {
 			switch self {
@@ -27,6 +30,10 @@ class AlphaMetaDownloader: NSObject {
 				return "Download failed"
 			case .testFailed:
 				return "Test downloaded file failed"
+            case .checksumFailed:
+                return "Checksum failed"
+            case .downloadChecksumFailed:
+                return "Download checksum failed"
 			case .unknownError:
 				return "Unknown error"
 			}
@@ -75,34 +82,50 @@ class AlphaMetaDownloader: NSObject {
 		return identifier
 	}
 
-	static func alphaAsset() async throws -> ReleasesResp.Asset {
+	static func alphaAssets() async throws -> [ReleasesResp.Asset] {
 		let resp = try? await AF.request("https://api.github.com/repos/MetaCubeX/mihomo/releases/tags/Prerelease-Alpha").serializingDecodable(ReleasesResp.self).value
 		
 		guard let resp else {
 			throw errors.downloadFailed
 		}
 		
-		let assets = resp.assets
-		
-		guard let assetName = assetName(),
-			  let asset = assets.first(where: {
-				  guard $0.state == "uploaded", $0.contentType == "application/gzip" else { return false }
-				  
-				  let names = $0.name.split(separator: "-").map(String.init)
-				  guard names.count > 4,
-						names[0] == "mihomo",
-						names[1] == "darwin",
-						names[2] == assetName,
-						names[3] == "alpha" else { return false }
-						
-				  return true
-			  }) else {
-			throw errors.decodeReleaseInfoFailed
-		}
-		
-		return asset
+		return resp.assets
 	}
-
+    
+    static func alphaCoreAsset(_ assets: [ReleasesResp.Asset]) async throws -> ReleasesResp.Asset {
+        guard let assetName = assetName(),
+              let asset = assets.first(where: {
+                  guard $0.state == "uploaded", $0.contentType == "application/gzip" else { return false }
+                  
+                  let names = $0.name.split(separator: "-").map(String.init)
+                  guard names.count > 4,
+                        names[0] == "mihomo",
+                        names[1] == "darwin",
+                        names[2] == assetName,
+                        names[3] == "alpha" else { return false }
+                        
+                  return true
+              }) else {
+            throw errors.decodeReleaseInfoFailed
+        }
+        
+        return asset
+    }
+    
+    static func checksumString(_ assets: [ReleasesResp.Asset], asset: ReleasesResp.Asset) async throws -> String {
+        guard let checksumsAsset = assets.first(where: {
+            $0.name == "checksums.txt"
+        }),
+              let resp = try? await AF.request(checksumsAsset.downloadUrl).serializingString().value,
+              let str = resp.split(separator: "\n").first(where: { $0.contains(asset.name) })?.split(separator: " ").first,
+              str.count == 64
+        else {
+            throw errors.downloadChecksumFailed
+        }
+        
+        return String(str)
+    }
+    
 	static func checkVersion(_ asset: ReleasesResp.Asset) throws -> ReleasesResp.Asset {
 		guard let path = Paths.alphaCorePath()?.path else {
 			throw errors.unknownError
@@ -125,8 +148,12 @@ class AlphaMetaDownloader: NSObject {
 		}
 	}
 
-	static func replaceCore(_ gzData: Data) throws -> String {
+    static func replaceCore(_ gzData: Data, checksum: String) throws -> String {
 		let fm = FileManager.default
+        
+        guard SHA256.hash(data: gzData).compactMap({ String(format: "%02x", $0) }).joined() == checksum else {
+            throw errors.checksumFailed
+        }
 
 		guard let helperURL = Paths.alphaCorePath() else {
 			throw errors.unknownError
