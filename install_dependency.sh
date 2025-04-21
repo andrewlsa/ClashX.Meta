@@ -49,3 +49,9 @@ echo "install XD dashboard"
 git clone -b gh-pages https://github.com/metacubex/metacubexd.git dashboard/xd
 cd dashboard/xd
 rm -rf *.webmanifest CNAME .git
+cd ../../
+
+echo "install zashboard"
+git clone -b gh-pages https://github.com/Zephyruso/zashboard.git dashboard/zashboard
+cd dashboard/zashboard
+rm -rf *.webmanifest CNAME .git

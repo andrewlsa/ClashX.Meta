@@ -86,9 +86,11 @@ class ClashWebViewContoller: NSViewController {
         webview.navigationDelegate = self
 
         webview.customUserAgent = "ClashX Runtime"
-//        if #available(macOS 13.3, *) {
-//            webview.isInspectable = true
-//        }
+#if DEBUG
+        if #available(macOS 13.3, *) {
+            webview.isInspectable = true
+        }
+#endif
         webview.setValue(false, forKey: "drawsBackground")
         let script = WKUserScript(source: "console.log(\"dashboard loaded\")", injectionTime: .atDocumentStart, forMainFrameOnly: false)
 
@@ -112,7 +114,7 @@ class ClashWebViewContoller: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         view.window?.titleVisibility = .hidden
-        view.window?.titlebarAppearsTransparent = true
+        view.window?.titlebarAppearsTransparent = false
         view.window?.styleMask.insert(.fullSizeContentView)
 
         view.window?.isOpaque = false
@@ -120,8 +122,6 @@ class ClashWebViewContoller: NSViewController {
 		view.window?.styleMask.insert(.closable)
 		view.window?.styleMask.insert(.resizable)
 		view.window?.styleMask.insert(.miniaturizable)
-        view.window?.toolbar = NSToolbar()
-        view.window?.toolbar?.showsBaselineSeparator = false
         view.wantsLayer = true
         view.layer?.cornerRadius = 10
 

@@ -213,12 +213,25 @@ extension ConfigManager {
     }
 }
 
+enum WebDashboard: String {
+    case yacd
+    case metacubexd
+    case zashboard
+}
+
 extension ConfigManager {
-	static var useYacdDashboard: Bool = UserDefaults.standard.object(forKey: "useYacdDashboard") as? Bool ?? false {
-		didSet {
-			UserDefaults.standard.set(useYacdDashboard, forKey: "useYacdDashboard")
-		}
-	}
+    static var webDashboard: WebDashboard {
+        get {
+            guard let string = UserDefaults.standard.object(forKey: "webDashboard") as? String,
+                  let dashboard = WebDashboard(rawValue: string) else {
+                return .zashboard
+            }
+            return dashboard
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "webDashboard")
+        }
+    }
 	
 	static var useSwiftUIDashboard: Bool = UserDefaults.standard.object(forKey: "useSwiftUIDashboard") as? Bool ?? false {
 		didSet {
@@ -226,7 +239,6 @@ extension ConfigManager {
 		}
 	}
 	
-
 	static var useAlphaCore: Bool = UserDefaults.standard.object(forKey: "useAlphaCore") as? Bool ?? false {
 		didSet {
 			UserDefaults.standard.set(useAlphaCore, forKey: "useAlphaCore")
