@@ -149,7 +149,20 @@ class ApiRequest {
                 callback("icloud error")
                 return
             }
-            requestConfigUpdate(configPath: path, callback: callback)
+            
+            let tempFile = ".clashx_meta_config"
+            let tempPath = Paths.localConfigPath(for: tempFile)
+            
+            try? FileManager.default.removeItem(atPath: tempPath)
+            
+            do {
+                try FileManager.default.copyItem(atPath: path, toPath: tempPath)
+            } catch {
+                callback("clashx_meta_config error \(error)")
+                return
+            }
+            
+            requestConfigUpdate(configPath: tempFile + ".yaml", callback: callback)
         }
     }
 

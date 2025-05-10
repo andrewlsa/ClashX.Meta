@@ -12,6 +12,8 @@ struct MetaServer: Codable {
 	let secret: String
 	var log: String = ""
 	
+    var safePaths = ""
+    
 	func jsonString() -> String {
 		let encoder = JSONEncoder()
 		encoder.outputFormatting = .prettyPrinted

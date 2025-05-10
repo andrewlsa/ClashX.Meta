@@ -242,12 +242,21 @@ class ClashProcess: NSObject {
 
 	func startMeta(_ config: ClashMetaConfig.Config) -> Promise<MetaServer> {
 		.init { resolver in
-			let confJSON = MetaServer(externalController: config.externalController, secret: config.secret ?? "").jsonString()
-			
 			guard let path = launchPath.path else {
 				resolver.reject(StartMetaError.launchPathMissing)
 				return
 			}
+            
+            guard let resourcePath = Bundle.main.resourcePath else {
+                resolver.reject(StartMetaError.startMetaFailed("resourcePath"))
+                return
+            }
+            
+            let confJSON = MetaServer(
+                externalController: config.externalController,
+                secret: config.secret ?? "",
+                safePaths: resourcePath + "/dashboard"
+            ).jsonString()
 			
 			PrivilegedHelperManager.shared.helper {
 				Logger.log("helperNotFound, startMeta failed", level: .error)
