@@ -13,6 +13,8 @@ let kDefaultConfigFilePath = "\(kConfigFolderPath)config.yaml"
 
 let kDefauleMetaCoreName = "com.metacubex.ClashX.ProxyConfigHelper.meta"
 
+let kSafeConfigName = ".clashx_meta_config"
+
 enum Paths {
     static func localConfigPath(for name: String) -> String {
         return "\(kConfigFolderPath)\(configFileName(for: name))"

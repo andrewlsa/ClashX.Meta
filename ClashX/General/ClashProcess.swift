@@ -225,20 +225,47 @@ class ClashProcess: NSObject {
 	}
 
 	func generateInitConfig() -> Promise<ClashMetaConfig.Config> {
-		Promise { resolver in
-			ClashMetaConfig.generateInitConfig {
-                var config = $0
-                PrivilegedHelperManager.shared.helper {
-//                    resolver.reject(StartMetaError.helperNotFound)
-					Logger.log("helperNotFound, getUsedPorts failed", level: .error)
-					resolver.fulfill(config)
-                }?.getUsedPorts {
-                    config.updatePorts($0 ?? "")
-                    resolver.fulfill(config)
+        safePaths().then { paths in
+            Promise { resolver in
+                ClashMetaConfig.generateInitConfig {
+                    var config = $0
+                    config.safePaths = paths.joined(separator: ":")
+                    PrivilegedHelperManager.shared.helper {
+    //                    resolver.reject(StartMetaError.helperNotFound)
+                        Logger.log("helperNotFound, getUsedPorts failed", level: .error)
+                        resolver.fulfill(config)
+                    }?.getUsedPorts {
+                        config.updatePorts($0 ?? "")
+                        resolver.fulfill(config)
+                    }
                 }
-			}
-		}
+            }
+        }
 	}
+    
+    func safePaths() -> Promise<[String]> {
+        .init { resolver in
+            guard let resourcePath = Bundle.main.resourcePath else {
+                resolver.reject(StartMetaError.startMetaFailed("resourcePath"))
+                return
+            }
+            var paths = [String]()
+            paths.append(resourcePath + "/dashboard")
+            
+            if ICloudManager.shared.useiCloud.value {
+                ICloudManager.shared.getUrl { url in
+                    if let p = url?.path {
+                        paths.append(p)
+                        resolver.fulfill(paths)
+                    } else {
+                        resolver.fulfill(paths)
+                    }
+                }
+            } else {
+                resolver.fulfill(paths)
+            }
+        }
+    }
 
 	func startMeta(_ config: ClashMetaConfig.Config) -> Promise<MetaServer> {
 		.init { resolver in
@@ -246,16 +273,12 @@ class ClashProcess: NSObject {
 				resolver.reject(StartMetaError.launchPathMissing)
 				return
 			}
-            
-            guard let resourcePath = Bundle.main.resourcePath else {
-                resolver.reject(StartMetaError.startMetaFailed("resourcePath"))
-                return
-            }
+        
             
             let confJSON = MetaServer(
                 externalController: config.externalController,
                 secret: config.secret ?? "",
-                safePaths: resourcePath + "/dashboard"
+                safePaths: config.safePaths ?? ""
             ).jsonString()
 			
 			PrivilegedHelperManager.shared.helper {

@@ -150,8 +150,14 @@ class ApiRequest {
                 return
             }
             
-            let tempFile = ".clashx_meta_config"
-            let tempPath = Paths.localConfigPath(for: tempFile)
+            guard ICloudManager.shared.useiCloud.value else {
+                requestConfigUpdate(configPath: path, callback: callback)
+                return
+            }
+            
+            #warning("icloud operation not permitted")
+            
+            let tempPath = Paths.localConfigPath(for: kSafeConfigName)
             
             try? FileManager.default.removeItem(atPath: tempPath)
             
@@ -162,7 +168,7 @@ class ApiRequest {
                 return
             }
             
-            requestConfigUpdate(configPath: tempFile + ".yaml", callback: callback)
+            requestConfigUpdate(configPath: tempPath, callback: callback)
         }
     }
 

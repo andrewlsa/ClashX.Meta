@@ -23,8 +23,8 @@ enum TerminalConfirmAction {
 		PrivilegedHelperManager.shared.helper()?.stopMeta()
 		PrivilegedHelperManager.shared.helper()?.updateTun(state: false, dns: ConfigManager.metaTunDNS)
 		
-		let path = Paths.tempPath() + "/cacheConfigs"
-		try? FileManager.default.removeItem(atPath: path)
+		try? FileManager.default.removeItem(atPath: Paths.tempPath() + "/cacheConfigs")
+        try? FileManager.default.removeItem(atPath: Paths.localConfigPath(for: kSafeConfigName))
 		
         if ConfigManager.shared.proxyPortAutoSet && !ConfigManager.shared.isProxySetByOtherVariable.value || NetworkChangeNotifier.isCurrentSystemSetToClash(looser: true) ||
             NetworkChangeNotifier.hasInterfaceProxySetToClash() {

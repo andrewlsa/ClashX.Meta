@@ -41,6 +41,8 @@ class ClashMetaConfig: NSObject {
         var logLevel = ConfigManager.selectLoggingApiLevel.rawValue
 		
 		var rules = ["DOMAIN-KEYWORD,\(initRulePayload),REJECT"]
+        
+        var safePaths: String?
 
         var path: String {
             get {
