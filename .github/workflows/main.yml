@@ -2,10 +2,7 @@ name: ClashX
 
 on:
   push:
-    tags: [ v* ]
-  workflow_dispatch:
-    inputs:
-      logLevel:
+    branches: Tahoe
 
 jobs:
   build:
