@@ -128,7 +128,7 @@
 	</dict>
 	<key>SUDisallowSelectChannel</key>
 	<false/>
-	<key><SUEnableAutomaticChecks</key>
+	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/MetaCubeX/clashX.meta/refs/heads/sparkle/appcast.xml</string>
