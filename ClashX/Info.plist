@@ -128,9 +128,13 @@
 	</dict>
 	<key>SUDisallowSelectChannel</key>
 	<false/>
+	<SUEnableAutomaticChecks</key>
+	<true/>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/MetaCubeX/clashX.meta/refs/heads/sparkle/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>Jhu0RI5Vp02om6JhxYnFewD82GCV8v7U05toMFXb+7U=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>0</integer>
 </dict>
 </plist>
